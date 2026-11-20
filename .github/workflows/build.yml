@@ -1,0 +1,37 @@
+name: Build CandyClient
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'CandyClient-1.4.5-HUD-Editor-Panel-FIXED-SOURCE.zip'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Extract source ZIP
+        run: |
+          mkdir -p source
+          unzip -q -o CandyClient-1.4.5-HUD-Editor-Panel-FIXED-SOURCE.zip -d source
+      - name: Build with project Gradle wrapper
+        working-directory: source/CandyClientMod
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon clean build
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: CandyClient-JAR
+          path: source/CandyClientMod/build/libs/*.jar
+          if-no-files-found: error
+          
